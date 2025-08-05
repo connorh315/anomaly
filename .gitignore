@@ -1,0 +1,7 @@
+*.so
+*.prx
+build
+.vscode
+.vs
+.github
+Makefile.local
