@@ -35,8 +35,10 @@ See the ["Getting started"](docs/gettingstarted.md) page.
 
 ## Features
 
-- Adds the ability to load in custom .DAT files that take priority over regular GAME/PATCH .DAT files.
+- Adds the ability to load in custom `.DAT` files that take priority over regular GAME/PATCH `.DAT` files.
 - Adds support for layered `text.csv` files, allowing mods to coexist without overwriting each other.
 - Removes the annoying spam in the console from unimplemented (and unnecessary) functions such as `sceVideoOutSetWindowModeMargins`, `sceRemotePlayProhibit` and others.
 
-This mod was implemented using [kalaposfos13's eboot-hooks-prx template](https://github.com/kalaposfos13/eboot-hooks-prx).
+This mod loader was implemented using [kalaposfos13's eboot-hooks-prx template](https://github.com/kalaposfos13/eboot-hooks-prx).
+
+Thank you to [Ac_K](https://github.com/ack77) for the support given when creating this project.
