@@ -6,8 +6,8 @@ Installing Anomaly and adding mods is quick and easy - no special tools or knowl
 
 Built and tested on the Windows version of shadPS4 v0.10.1 but should work on other platforms too.
 
-[!IMPORTANT]
-Your game must be the **EU version**, and on **version 1.24** for this to work. Other versions are not supported.
+> [!IMPORTANT]
+> Your game must be the **EU version**, and on **version 1.24** for this to work. Other versions are not supported.
 
 ## Installing Anomaly
 
@@ -20,8 +20,8 @@ Your game must be the **EU version**, and on **version 1.24** for this to work. 
 2. In your game folder (where `data`, `sce_module`, and `sce_sys` are), create a new folder called `mods`.
 3. Place your mods inside the `mods` folder.
 
-[!NOTE]
-The mod must include both a `.DAT` as well as a `.HDR` file for the game to include it.
+> [!NOTE]
+> The mod must include both a `.DAT` as well as a `.HDR` file for the game to include it.
 
 ## Uninstalling mods
 
