@@ -17,30 +17,10 @@
 
 extern "C" void sceSysUtilSendSystemNotificationWithText(int type, const char* message);
 
-HOOK_INIT(FindFileContainer);
-void* HOOK_FUNC FindFileContainer(char* flag) {
-    void* ret = CONTINUE(FindFileContainer, void* (*)(char*), flag);
-
-    return ret;
-}
-
-HOOK_INIT(fnv_hash_string);
-uint32_t fnv_hash_string(char* str, uint32_t prime) {
-    // uint32_t hash =
-    /*if (string) {
-        LOG_INFO("Hash requested with {} -> {}", string, hash);
-    }*/
-    return CONTINUE(fnv_hash_string, uint32_t (*)(char*, uint32_t), str, prime);
-}
-
 HOOK_INIT(Log_Note);
 void Log_Note(char* message, char* arg1) {
     LOG_INFO("GAME NOTE: {} {}", message, arg1);
 }
-
-
-
-#define ZERO "\x00"
 
 void patch_nuisance_functions() {
     PATCH(0x0718c16,
@@ -74,7 +54,7 @@ extern "C" int32_t __wrap__init(size_t, void*) {
     u64 eboot_base_addr = (u64)module_info->segmentInfo[0].address;
 
     if (!ends_with_case_insensitive((char*)(eboot_base_addr + 0x2421EBD), "_PATCH11C")) {
-        LOG_INFO("Invalid LEGO Dimensions version. Ensure your game is the EU version and up to date!");
+        LOG_INFO("Invalid LEGO Dimensions version. Ensure your game is up to date!");
         return 0;
     }
 
