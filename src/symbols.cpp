@@ -3,18 +3,19 @@
 
 #include "symbols.h"
 
-static u64 g_base_addr = 0;
 
 #pragma region Memory
 
 DEFINE_SYMBOL(t_NuMemoryGet, NuMemoryGet);
 DEFINE_SYMBOL(t_NuMemory_GetThreadMem, NuMemory_GetThreadMem);
 DEFINE_SYMBOL(t_NuMemoryManager__BlockAlloc, NuMemoryManager__BlockAlloc);
+DEFINE_SYMBOL(t_NuMemoryManager_BlockFree, NuMemoryManager_BlockFree);
 
 void resolve_memory() {
     RESOLVE_SYMBOL(NuMemoryGet, 0x4adb10);
     RESOLVE_SYMBOL(NuMemory_GetThreadMem, 0x4adb90);
     RESOLVE_SYMBOL(NuMemoryManager__BlockAlloc, 0x4a83d0);
+    RESOLVE_SYMBOL(NuMemoryManager_BlockFree, 0x4a94a0);
 }
 
 #pragma endregion
@@ -42,8 +43,6 @@ void resolve_gui() {
 #pragma endregion
 
 void ResolveGameSymbols(u64 base_addr) {
-    g_base_addr = base_addr;
-
     resolve_memory();
     resolve_locale();
     resolve_gui();

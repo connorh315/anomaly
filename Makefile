@@ -7,6 +7,13 @@ LIBS:= -lc -lc++ -lkernel -lSceLibcInternal -lSceSysUtil -lSceSysmodule -lSceFio
 				 
 CFILES := $(wildcard $(PROJDIR)/*.c)
 CPPFILES := $(wildcard $(PROJDIR)/*.cpp)
+
+HOOK_CFILES := $(wildcard $(PROJDIR)/hooks/*.c)
+HOOK_CPPFILES := $(wildcard $(PROJDIR)/hooks/*.cpp)
+
+CFILES += $(HOOK_CFILES)
+CPPFILES += $(HOOK_CPPFILES)
+
 OBJS := $(patsubst $(PROJDIR)/%.c,$(INTDIR)/%.o,$(CFILES)) \
         $(patsubst $(PROJDIR)/%.cpp,$(INTDIR)/%.o,$(CPPFILES))
 
@@ -42,9 +49,11 @@ $(TARGET): $(INTDIR) $(OBJS)
 		-out=$(INTDIR)/$(PROJDIR).oelf --lib=$(TARGET) --paid 0x3800000000000011
 
 $(INTDIR)/%.o: $(PROJDIR)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(INTDIR)/%.o: $(PROJDIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CCX) $(CXXFLAGS) -o $@ $<
 
 $(INTDIR):

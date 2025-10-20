@@ -1,5 +1,7 @@
 #pragma once
 
+#include "globals.h"
+
 void ResolveGameSymbols(uint64_t base_addr);
 
 #define DECLARE_SYMBOL(type, name) extern type name
@@ -15,6 +17,9 @@ DECLARE_SYMBOL(t_NuMemory_GetThreadMem, NuMemory_GetThreadMem);
 
 typedef void* (*t_NuMemoryManager__BlockAlloc)(void* numemory_manager, int align, int size, int heap, void* tracker, int);
 DECLARE_SYMBOL(t_NuMemoryManager__BlockAlloc, NuMemoryManager__BlockAlloc);
+
+typedef void (*t_NuMemoryManager_BlockFree)(void* numemory_manager, void* block, uint32_t);
+DECLARE_SYMBOL(t_NuMemoryManager_BlockFree, NuMemoryManager_BlockFree);
 #pragma endregion
 
 #pragma region Locale
