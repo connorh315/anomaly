@@ -44,6 +44,8 @@ int index_to_return = -1;
 /// </summary>
 HOOK_INIT(FindFileIndex);
 int FindFileIndex(int* container, unsigned int fileHash, char* filePath) {
+    //LOG_INFO("FindFileIndex called with filePath: {}", filePath);
+    
     if (!strcmp(filePath, TEXTCSV)) {
         if (index_to_return != -1)
             return index_to_return;
@@ -204,6 +206,8 @@ void* (*GetMemoryArena)();
 void* (*GetMemoryAllocator)(void*);
 void* (*AllocateMemory)(void*, int, int, int, void*, int);
 
+static int mods_loaded = 0;
+
 void load_mods(long param_1) {
     uint32_t handle = 0;
     int result = sceFiosDHOpen(0, &handle, (char*)MODS_FOLDER_PATH, 0, 0);
@@ -242,6 +246,7 @@ void load_mods(long param_1) {
 
 
                 if (dat != nullptr) {
+                    mods_loaded++;
                     *(uint32_t*)((char*)dat + 0x128) = 0;
 
                     // Get the current count
@@ -274,8 +279,33 @@ long* OpenDATFile(long param_1, char* filename, int counter) {
     return CONTINUE(OpenDATFile, long* (*)(long, char*, int), param_1, filename, counter);
 }
 
+HOOK_INIT(fnv_hash_string);
+uint32_t fnv_hash_string(char* str, uint32_t prime) {
+    // uint32_t hash =
+    /*if (string) {
+        LOG_INFO("Hash requested with {} -> {}", string, hash);
+    }*/
+    return CONTINUE(fnv_hash_string, uint32_t (*)(char*, uint32_t), str, prime);
+}
 
+HOOK_INIT(Log_Note);
+void Log_Note(char* message, char* arg1) {
+    LOG_INFO("GAME NOTE: {} {}", message, arg1);
+}
 
+void (*GUI2MenuEntry_SetText)(long*, char*);
+long* (*MainMenuScreen_FindObject)(long*, char*);
+
+HOOK_INIT(MainMenuScreen_AboutToShow);
+void MainMenuScreen_AboutToShow(long* main_menu_screen) {
+    CONTINUE(MainMenuScreen_AboutToShow, void (*)(long*), main_menu_screen);
+    long* switchprofile = MainMenuScreen_FindObject(main_menu_screen, "xml_switchprofile");
+    if (switchprofile) {
+        char text[64];
+        snprintf(text, sizeof(text), "Anomaly (%d loaded)", mods_loaded);
+        GUI2MenuEntry_SetText(switchprofile, text);
+    }
+}
 
 #define ZERO "\x00"
 
@@ -290,17 +320,23 @@ void patch_nuisance_functions() {
     PATCH(0x04b9964,
           "\x90\x90\x90\x90\x90"); // Patch out the scePadSetLightbar call 2 (spams the
                                    // console)
+    PATCH(0x0157b517, "\x48\x8d\x35\xec");
 } 
 
 bool eboot_hook(u64 base_addr) {
     LOG_INFO("Adding MODFILE loading");
     patch_nuisance_functions();
 
+    PATCH(0x0cb9286, "\x90\x90\x90\x90\x90"); // RemoveMenuEntries (Disables: Remove SwitchProfile Entry)
+
     LOG_INFO("Hooking eboot functions");
     // HOOK(0x0005ab4b0, FindFileContainer); // Always returns dat container
     HOOK(0x0004d3ec0, FindFileIndex);
     HOOK(0x0005adc70, OpenDATFile);
     HOOK(0x0004d7b90, BuildPathFromSegments);
+    HOOK(0x000c7d0b0, Log_Note);
+    HOOK(0x000cb9430, MainMenuScreen_AboutToShow);
+    //HOOK(0x0004a4390, fnv_hash_string);
 
     ParseTextCSV = (int (*)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char))(
         base_addr + 0x4ef570);
@@ -310,6 +346,9 @@ bool eboot_hook(u64 base_addr) {
     GetMemoryArena = (void* (*)())(base_addr + 0x4adb10);
     GetMemoryAllocator = (void* (*)(void*))(base_addr + 0x4adb90);
     AllocateMemory = (void* (*)(void*, int, int, int, void*, int))(base_addr + 0x4a83d0);
+
+    MainMenuScreen_FindObject = (long* (*)(long*, char*))(base_addr + 0xcbaf80);
+    GUI2MenuEntry_SetText = (void (*)(long*, char*))(base_addr + 0xb74d80);
 
     return true;
 }
