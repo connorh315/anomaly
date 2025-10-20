@@ -18,15 +18,14 @@ extern "C" void sceFiosDHCloseSync(uint32_t param_1, uint32_t dh);
 extern "C" int sceFiosDHOpenSync(uint8_t* handle_1, uint32_t* handle_2, char* path, uint8_t* handle_3, int actual_count);
 extern "C" int sceFiosDHReadSync(uint32_t param_1, uint32_t dh, SceFiosDirEntry* entry);
 
+#include "symbols.h"
+
 HOOK_INIT(FindFileContainer);
 void* HOOK_FUNC FindFileContainer(char* flag) {
     void* ret = CONTINUE(FindFileContainer, void* (*)(char*), flag);
 
     return ret;
 }
-
-int (*ParseTextCSV)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char);
-
 
 bool is_textcsv_loaded = false;
 bool is_textcsv_overrided = false;
@@ -72,7 +71,7 @@ int FindFileIndex(int* container, unsigned int fileHash, char* filePath) {
 
                     uint16_t value = *(const uint16_t*)ptr;
                     index_to_return = value;
-                    int result = ParseTextCSV(TEXTCSV, 0, 0, (uint8_t*)"LABEL", 2, -1, 0, 0, 0);
+                    int result = NuStringTableLoadCSV(TEXTCSV, 0, 0, (uint8_t*)"LABEL", 2, -1, 0, 0, 0);
                     LOG_INFO("Custom text.csv returned {}", result);
                     index_to_return = -1;
 
@@ -128,8 +127,6 @@ void BuildPathFromSegments(long param_1, long* built_path, unsigned int param_3,
     bool should_disable_dedup = (strcmp((char*)(*built_path), "stuff/text/text.csv") == 0);
     toggle_path_deduplication(should_disable_dedup);
 }
-
-void (*PrintDirectoryTree)(long*, char*, unsigned int);
 
 bool ends_with_case_insensitive(const char* str, const char* suffix) {
     size_t str_len = strlen(str);
@@ -202,10 +199,6 @@ void get_app0_mods_path(const char* entryPath, char* out, size_t maxLen) {
     out[prefixLen + nameLen] = '\0';
 }
 
-void* (*GetMemoryArena)();
-void* (*GetMemoryAllocator)(void*);
-void* (*AllocateMemory)(void*, int, int, int, void*, int);
-
 static int mods_loaded = 0;
 
 void load_mods(long param_1) {
@@ -225,9 +218,9 @@ void load_mods(long param_1) {
     // This chunk of code was such a pita. If someone can get this working without having to use the game's allocator please help :)
     void* tag = reinterpret_cast<void*>(0x800242d079);
 
-    void* arena = GetMemoryArena();
-    void* allocator = GetMemoryAllocator(arena);
-    void* mem = AllocateMemory(allocator, actualCount, 0x40, 1, tag, 0);
+    void* arena = NuMemoryGet();
+    void* allocator = NuMemory_GetThreadMem(arena);
+    void* mem = NuMemoryManager__BlockAlloc(allocator, actualCount, 0x40, 1, tag, 0);
     alignas(8) uint8_t handle_block[0x30] = {};
 
     result = sceFiosDHOpenSync(handle_block, &handle, (char*)MODS_FOLDER_PATH, (uint8_t*)mem, actualCount); 
@@ -338,17 +331,7 @@ bool eboot_hook(u64 base_addr) {
     HOOK(0x000cb9430, MainMenuScreen_AboutToShow);
     //HOOK(0x0004a4390, fnv_hash_string);
 
-    ParseTextCSV = (int (*)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char))(
-        base_addr + 0x4ef570);
-
-    PrintDirectoryTree = (void (*)(long*, char*, unsigned int))(base_addr + 0x5c87c4);
-
-    GetMemoryArena = (void* (*)())(base_addr + 0x4adb10);
-    GetMemoryAllocator = (void* (*)(void*))(base_addr + 0x4adb90);
-    AllocateMemory = (void* (*)(void*, int, int, int, void*, int))(base_addr + 0x4a83d0);
-
-    MainMenuScreen_FindObject = (long* (*)(long*, char*))(base_addr + 0xcbaf80);
-    GUI2MenuEntry_SetText = (void (*)(long*, char*))(base_addr + 0xb74d80);
+    ResolveGameSymbols(base_addr);
 
     return true;
 }
@@ -361,7 +344,7 @@ extern "C" int32_t __wrap__init(size_t, void*) {
     sceKernelGetModuleInfo(0, module_info);
     eboot_base_addr = (u64)module_info->segmentInfo[0].address;
 
-    if (strcmp((char*)(eboot_base_addr + 0x2421EBD), "EU_PATCH11C")) {
+    if (ends_with_case_insensitive((char*)(eboot_base_addr + 0x2421EBD), "_PATCH11C")) {
         LOG_INFO("Invalid LEGO Dimensions version. Ensure your game is the EU version and up to date!");
         return 0;
     }
