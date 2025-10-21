@@ -5,7 +5,7 @@
 #include "common/assert.h"
 #include "common/logging.h"
 #include "common/types.h"
-#include "hooking.h"
+#include "main.h"
 #include "globals.h"
 #include "utils.h"
 
