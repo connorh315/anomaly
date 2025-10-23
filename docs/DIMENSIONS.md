@@ -15,13 +15,13 @@ The table below summarises the current state of modding for each file type in LE
 | --- | --- | --- | --- |
 | .ABILITY / .ABILITIES | Ability Definition | ✅ Fully supported | [AbilityEditor]() can be used to edit these files |
 | .AN4 | Animation | 🚧 Work in progress | No tools currently exist to edit these files |
-| .AS | Animation set | ✅ Fully supported | [Flux]() can be used to edit these files |
+| .AS | Animation set | ✅ Fully supported | [Flux](https://github.com/connorh315/flux) can be used to edit these files |
 | .BINARY | Defines collections | ✅ Fully supported | Editable with any text editor |
 | .CBX | Highly-compressed audio | ⚪ Irrelevant | CBX files are only used in low-power platforms (Wii U). Tools like [CBXDecoder]() and [vgmstream](https://vgmstream.org/) can play CBX files if needed |
-| .CD | Character Definition | ✅ Fully supported | [Flux]() can be used to edit these files |
+| .CD | Character Definition | ✅ Fully supported | [Flux](https://github.com/connorh315/flux) can be used to edit these files |
 | .CFG | Configuration | ✅ Fully supported | Editable with any text editor |
-| .CPD | Character Skeleton Definition | ✅ Fully supported | [Flux]() can be used to edit these files |
-| .CPJ | Character Project | ✅ Fully supported | [Flux]() can be used to edit these files |
+| .CPD | Character Skeleton Definition | ✅ Fully supported | [Flux](https://github.com/connorh315/flux) can be used to edit these files |
+| .CPJ | Character Project | ✅ Fully supported | [Flux](https://github.com/connorh315/flux) can be used to edit these files |
 | .CSV | Data table | ✅ Fully supported | Editable with any text editor |
 | .CU3 | Cutscene | 🚧 Work in progress | No tools currently exist to edit these files |
 | .DNO | Dyno (Physics Mesh) | 🚧 Work in progress | No tools currently exist to edit these files |
@@ -34,7 +34,7 @@ The table below summarises the current state of modding for each file type in LE
 | .GLM | Grid map | ⚪ Irrelevant | Purpose is unclear, no tools currently exist to edit these files |
 | .GSC | Model Geometry (Static) | 🚧 Work in progress | No tools currently exist to edit these files |
 | .KRW | Krawlie | 🚧 Work in progress | No tools currently exist to edit these files |
-| .LED | Lego Editor Data | ✅ Fully supported | [Flux]() can be used to edit these files |
+| .LED | Lego Editor Data | ✅ Fully supported | [Flux](https://github.com/connorh315/flux) can be used to edit these files |
 | .NXG_TEXTURES | Textures | ✅ Fully supported | [NUTCracker](https://github.com/JayFrancoe/NuTCrackerV3/) can be used to edit these files |
 | .OGG | Audio | ✅ Fully supported | OGG files can be edited with many audio editors |
 | .PAR | Parts | 🚧 Work in progress | No tools currently exist to edit these files |
