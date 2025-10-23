@@ -11,7 +11,7 @@ Built and tested on the Windows version of shadPS4 v0.10.1 but should work on ot
 
 ## Installing Anomaly
 
-1. Go to the [releases](/releases/) page, and download the most recent version.
+1. Go to the [releases](https://github.com/connorh315/anomaly/releases) page, and download the most recent version.
 2. Locate where your game is installed, and place the downloaded `.PRX` file into the `sce_module` folder.
 
 ## Installing mods
