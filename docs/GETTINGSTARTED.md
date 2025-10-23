@@ -119,5 +119,7 @@ That's it! You have successfully created and loaded your first Anomaly mod!
 
 Play around with copying and modifying other text entries in the `TEXT.CSV` file. Remember to rebuild your mod using BrickVault each time you make changes. You will also need to restart the game to see changes take effect.
 
+It's important to know what is currently possible with modding LEGO Dimensions. See the [modding state of play](DIMENSIONS.md) page to understand what file types are currently supported, and what is still a work in progress.]
+
 > [!TIP]
 > Notice how long it takes to get into the game with the unskippable splash screens? How about creating a mod that decreases the loading times? See the [quick startup mod example](examples/QUICKSTARTUPMOD.md) to create a mod that does just that!
