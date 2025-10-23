@@ -31,7 +31,7 @@ To remove Anomaly altogether: Remove the `anomaly.prx` file from the `sce_module
 
 ## Creating mods
 
-See the ["Getting started"](/docs/GETTINGSTARTED.md) page.
+See the [Getting started](/docs/GETTINGSTARTED.md) page.
 
 ## Features
 
