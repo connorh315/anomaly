@@ -7,7 +7,7 @@ Installing Anomaly and adding mods is quick and easy - no special tools or knowl
 Built and tested on the Windows version of shadPS4 v0.10.1 but should work on other platforms too.
 
 > [!IMPORTANT]
-> Your game must be the **EU version**, and on **version 1.24** for this to work. Other versions are not supported.
+> Your game must be on **version 1.24** for this to work. Other versions are not supported.
 
 ## Installing Anomaly
 
@@ -31,7 +31,7 @@ To remove Anomaly altogether: Remove the `anomaly.prx` file from the `sce_module
 
 ## Creating mods
 
-See the ["Getting started"](docs/gettingstarted.md) page.
+See the ["Getting started"](/docs/gettingstarted.md) page.
 
 ## Features
 
