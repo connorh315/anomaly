@@ -23,8 +23,17 @@ DECLARE_SYMBOL(t_NuMemoryManager_BlockFree, NuMemoryManager_BlockFree);
 #pragma endregion
 
 #pragma region Locale
-typedef int (*t_NuStringTableLoadCSV)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char);
-DECLARE_SYMBOL(t_NuStringTableLoadCSV, NuStringTableLoadCSV);
+typedef char* (*t_NuStringTableGetByName)(char* key, char* value);
+DECLARE_SYMBOL(t_NuStringTableGetByName, NuStringTableGetByName);
+
+typedef void (*t_NuStringTableSetBank)(uint32_t bank_id);
+DECLARE_SYMBOL(t_NuStringTableSetBank, NuStringTableSetBank);
+
+typedef uint32_t (*t_NuStringTableGetBank)();
+DECLARE_SYMBOL(t_NuStringTableGetBank, NuStringTableGetBank);
+
+//typedef int (*t_NuStringTableLoadCSV)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char);
+//DECLARE_SYMBOL(t_NuStringTableLoadCSV, NuStringTableLoadCSV);
 #pragma endregion
 
 #pragma region GUI

@@ -22,10 +22,16 @@ void resolve_memory() {
 
 #pragma region Locale
 
-DEFINE_SYMBOL(t_NuStringTableLoadCSV, NuStringTableLoadCSV);
+//DEFINE_SYMBOL(t_NuStringTableLoadCSV, NuStringTableLoadCSV);
+DEFINE_SYMBOL(t_NuStringTableGetByName, NuStringTableGetByName);
+DEFINE_SYMBOL(t_NuStringTableSetBank, NuStringTableSetBank);
+DEFINE_SYMBOL(t_NuStringTableGetBank, NuStringTableGetBank);
 
 void resolve_locale() {
-    RESOLVE_SYMBOL(NuStringTableLoadCSV, 0x4ef570);
+    //RESOLVE_SYMBOL(NuStringTableLoadCSV, 0x4ef570);
+    RESOLVE_SYMBOL(NuStringTableGetByName, 0x4f1d60);
+    RESOLVE_SYMBOL(NuStringTableSetBank, 0x4f13a0);
+    RESOLVE_SYMBOL(NuStringTableGetBank, 0x4f13e0);
 }
 
 #pragma endregion

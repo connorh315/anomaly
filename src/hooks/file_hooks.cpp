@@ -3,6 +3,8 @@
 #include "globals.h"
 #include "utils.h"
 
+#include "systems/layerable.h"
+
 extern "C" int sceFiosDHOpen(uint32_t param_1, uint32_t* dh, char* path, uint32_t param_4,
                              uint32_t param_5);
 extern "C" void sceFiosOpWait(uint32_t dh);
@@ -13,13 +15,10 @@ extern "C" int sceFiosDHOpenSync(uint8_t* handle_1, uint32_t* handle_2, char* pa
                                  uint8_t* handle_3, int actual_count);
 extern "C" int sceFiosDHReadSync(uint32_t param_1, uint32_t dh, SceFiosDirEntry* entry);
 
-bool is_textcsv_loaded = false;
-bool is_textcsv_overrided = false;
-
-int index_to_return = -1;
-
 #define TEXTCSV ((char*)"stuff\\text\\text.csv")
 #define TEXTCSV2 ((char*)"stuff/text/text.csv")
+
+#define COLLECTIONTXT ((char*)"chars/collection.txt")
 
 /// <summary>
 /// How does this work?
@@ -31,59 +30,131 @@ int index_to_return = -1;
 /// rather than just returning the first.
 /// </summary>
 HOOK_INIT(NuFileTable_FindHash);
-int NuFileTable_FindHash(int* container, unsigned int fileHash, char* filePath) {
-    // LOG_INFO("FindFileIndex called with filePath: {}", filePath);
+int NuFileTable_FindHash(int* file_table, unsigned int fileHash, char* filePath) {
+    //LOG_INFO("FindFileIndex called with filePath: {}", filePath);
 
-    if (!strcmp(filePath, TEXTCSV)) {
-        if (index_to_return != -1)
-            return index_to_return;
+    const int stringCount = *(const int*)((char*)file_table + 0x20);
+    const char* ptr = *(const char**)((char*)file_table + 0x28);
 
-        if (!is_textcsv_overrided && !is_textcsv_loaded) {
-            is_textcsv_overrided = true;
-            is_textcsv_loaded = true;
+    auto* layerable = FindLayerableFileByHash(fileHash);
+    if (layerable && layerable->isActive && !layerable->isLoaded) {
+        if (layerable->last_yielded_index != layerable->last_collisions_index) {
+            LOG_INFO("Yielding control back to ParseTextCSV for {}", layerable->path);
+            return layerable->last_collisions_index; // Yield control back to ParseTextCSV
         }
 
-        if (is_textcsv_overrided) {
-            const int stringCount = *(const int*)((char*)container + 0x20);
-            const char* ptr = *(const char**)((char*)container + 0x28);
+        int prev_index = -1;
+        for (int i = 0; i < stringCount; i++) {
+            size_t len = strlen(ptr);
 
-            for (int i = 0; i < stringCount; i++) {
-                size_t len = strlen(ptr);
+            LOG_INFO("Checking file entry: {}", ptr);
 
-                // Compare the string BEFORE advancing ptr
-                if (!strcmp(ptr, TEXTCSV2)) {
-                    const char* string_start = ptr;
+            if (i > layerable->last_collisions_index && !strcmp(ptr, layerable->path)) {
+                if (layerable->lookAhead && prev_index != -1)
+                    return prev_index;
 
-                    ptr += len + 1;
-                    if ((uintptr_t)ptr & 1)
-                        ptr++;
-
-                    uint16_t value = *(const uint16_t*)ptr;
-                    index_to_return = value;
-                    int result =
-                        NuStringTableLoadCSV(TEXTCSV, 0, 0, (uint8_t*)"LABEL", 2, -1, 0, 0, 0);
-                    LOG_INFO("Custom text.csv returned {}", result);
-                    index_to_return = -1;
-
-                    ptr += 2;
-                    continue;
-                }
-
-                // Still advance ptr even if string doesn't match
                 ptr += len + 1;
                 if ((uintptr_t)ptr & 1)
                     ptr++;
+
+
+
+                prev_index = *(const uint16_t*)ptr;
+                LOG_INFO("Returning value {}", prev_index);
+                layerable->last_collisions_index = i;
                 ptr += 2;
+                if (!layerable->lookAhead)
+                    return prev_index;
+                else
+                    continue;
             }
+
+            // Advance to next
+            ptr += len + 1;
+            if ((uintptr_t)ptr & 1)
+                ptr++;
+            ptr += 2;
+        }
+
+        if (prev_index != -1) {
+            layerable->isExhausted = true;
+            LOG_INFO("Layers complete, returning {}", prev_index);
+            return prev_index; // Final lookahead return
+        }
+
+        LOG_INFO("Finished loading all layers for {}", layerable->path);
+        layerable->isLoaded = true;
+    }
+
+    int ret =
+        CONTINUE(NuFileTable_FindHash, int (*)(int*, unsigned int, char*), file_table, fileHash, filePath);
+
+    return ret;
+}
+
+HOOK_INIT(NuStringTableLoadCSV);
+int NuStringTableLoadCSV(char* path, long* param_2, uint64_t param_3, uint8_t* label, int param_5, int param_6, void* param_7, int param_8, char param_9) {
+    uint32_t hash = 0x1347d7cd;
+
+    auto* layerable = FindLayerableFileByHash(hash);
+    if (!strcmp(path, TEXTCSV) && layerable && !layerable->isActive) {
+        layerable->isActive = true;
+        bool cleared = false;
+        int result = 0;
+
+        // Keep loading until this file’s entries are fully processed
+        while (!layerable->isLoaded) {
+            result = CONTINUE(
+                NuStringTableLoadCSV,
+                int (*)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char), path,
+                param_2, param_3, label, param_5, param_6, param_7, param_8, param_9);
+
+            if (cleared == false) {
+                PATCH(0x004ef7b4, "\x90\x90\x90\x90\x90"); // Stops clearing the table
+                cleared = true;
+            }
+
+            LayerableFileHasYielded(layerable);
+        }
+
+        return result; // Don’t fall through after layering is done
+    }
+
+    return CONTINUE(NuStringTableLoadCSV,
+                    int (*)(char*, long*, uint64_t, uint8_t*, int, int, void*, int, char), path,
+                    param_2, param_3, label, param_5, param_6, param_7, param_8, param_9);
+}
+
+HOOK_INIT(MechCollections_ImportCollectionFile);
+void MechCollections_ImportCollectionFile(long* mech_collections, char* path, long* param_3, long* dlc_collection) {
+    uint32_t hash = 0x874ca1b4;
+    LOG_INFO("MechCollections_ImportCollectionFile called with path: {}", path);
+
+    CONTINUE(MechCollections_ImportCollectionFile, void (*)(long*, char*, long*, long*),
+            mech_collections, path, param_3, dlc_collection);
+
+    LOG_INFO("Vector size: {}", *(long*)((char*)param_3 + 12));
+
+    if (path[0] == '.' && path[1] == '/') { // Loading main collection.txt file
+        auto* layerable = FindLayerableFileByHash(hash);
+        if (layerable && !layerable->isActive) {
+            layerable->isActive = true;
+            PATCH(0x011c457f, "\xeb\x32");
+
+            // Keep loading until this file’s entries are fully processed
+            while (!layerable->isLoaded && !layerable->isExhausted) {
+                CONTINUE(MechCollections_ImportCollectionFile,
+                         void (*)(long*, char*, long*, long*), mech_collections, path, param_3,
+                         dlc_collection);
+                LOG_INFO("Vector size: {}", *(long*)((char*)param_3 + 12));
+                LayerableFileHasYielded(layerable);
+            }
+            return; // Don’t fall through after layering is done
         }
     }
 
-    is_textcsv_overrided = false;
 
-    int ret =
-        CONTINUE(NuFileTable_FindHash, int (*)(int*, unsigned int, char*), container, fileHash, filePath);
-
-    return ret;
+    
 }
 
 bool is_deduplicator_enabled = 1;
@@ -108,12 +179,10 @@ void toggle_path_deduplication(bool disable) {
 /// FindFileIndex to then return numerous indices, rather than only having access to 1.
 /// </summary>
 /// <param name=""></param>
-HOOK_INIT(BuildPathFromSegments);
-void BuildPathFromSegments(long param_1, long* built_path, unsigned int param_3, char zero) {
-    CONTINUE(BuildPathFromSegments, void (*)(long, long*, unsigned int, char), param_1, built_path,
+HOOK_INIT(NuFileTree_GetFilename);
+void NuFileTree_GetFilename(long file_tree, long* built_path, unsigned int param_3, char zero) {
+    CONTINUE(NuFileTree_GetFilename, void (*)(long, long*, unsigned int, char), file_tree, built_path,
              param_3, zero);
-
-    // LOG_INFO("Built path: {}", (char*)(*built_path));
 
     bool should_disable_dedup = (strcmp((char*)(*built_path), "stuff/text/text.csv") == 0);
     toggle_path_deduplication(should_disable_dedup);
@@ -174,7 +243,7 @@ void get_app0_mods_path(const char* entryPath, char* out, size_t maxLen) {
     out[prefixLen + nameLen] = '\0';
 }
 
-long* OpenDATFile(long param_1, char* filename, int counter);
+long* NuFileDeviceDat_OpenIndividual(long param_1, char* filename, int counter);
 
 void load_mods(long param_1) {
     uint32_t handle = 0;
@@ -209,7 +278,7 @@ void load_mods(long param_1) {
                 char modName[128];
                 get_app0_mods_path(entry->fullPath, modName, sizeof(modName));
                 LOG_INFO("Loading mod {}", modName);
-                long* dat = OpenDATFile((long)0, modName, -1);
+                long* dat = NuFileDeviceDat_OpenIndividual((long)0, modName, -1);
 
                 LOG_INFO("Pointer address: {}", static_cast<void*>(dat));
 
@@ -238,8 +307,8 @@ void load_mods(long param_1) {
     NuMemoryManager_BlockFree(allocator, mem, 0);
 }
 
-HOOK_INIT(OpenDATFile);
-long* OpenDATFile(long param_1, char* filename, int counter) {
+HOOK_INIT(NuFileDeviceDat_OpenIndividual);
+long* NuFileDeviceDat_OpenIndividual(long param_1, char* filename, int counter) {
     if (!strcmp(filename, "upd:PATCH") &&
         counter < 0) { // This is the first ever call to the OpenDATFile function, which means we
                        // stop it, load our mods, then let it continue execution. Meaning mods are
@@ -247,13 +316,15 @@ long* OpenDATFile(long param_1, char* filename, int counter) {
         load_mods(param_1);
     }
 
-    return CONTINUE(OpenDATFile, long* (*)(long, char*, int), param_1, filename, counter);
+    return CONTINUE(NuFileDeviceDat_OpenIndividual, long* (*)(long, char*, int), param_1, filename, counter);
 }
 
 bool HookFileFunctions() {
     HOOK(0x0004d3ec0, NuFileTable_FindHash);
-    HOOK(0x0004d7b90, BuildPathFromSegments);
-    HOOK(0x0005adc70, OpenDATFile);
+    HOOK(0x0004d7b90, NuFileTree_GetFilename);
+    HOOK(0x0005adc70, NuFileDeviceDat_OpenIndividual);
+    HOOK(0x0004ef570, NuStringTableLoadCSV);
+    HOOK(0x0011c4540, MechCollections_ImportCollectionFile);
 
     return true;
 }

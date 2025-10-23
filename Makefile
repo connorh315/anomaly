@@ -11,8 +11,11 @@ CPPFILES := $(wildcard $(PROJDIR)/*.cpp)
 HOOK_CFILES := $(wildcard $(PROJDIR)/hooks/*.c)
 HOOK_CPPFILES := $(wildcard $(PROJDIR)/hooks/*.cpp)
 
-CFILES += $(HOOK_CFILES)
-CPPFILES += $(HOOK_CPPFILES)
+SYSTEM_CFILES := $(wildcard $(PROJDIR)/systems/*.c)
+SYSTEM_CPPFILES := $(wildcard $(PROJDIR)/systems/*.cpp)
+
+CFILES += $(HOOK_CFILES) $(SYSTEM_CFILES)
+CPPFILES += $(HOOK_CPPFILES) $(SYSTEM_CPPFILES)
 
 OBJS := $(patsubst $(PROJDIR)/%.c,$(INTDIR)/%.o,$(CFILES)) \
         $(patsubst $(PROJDIR)/%.cpp,$(INTDIR)/%.o,$(CPPFILES))
