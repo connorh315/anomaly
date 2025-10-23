@@ -44,7 +44,7 @@ The `TEXT.CSV` file is where all of the in-game text is stored. We will be creat
 Instead of creating the file from scratch, let's take the existing `TEXT.CSV` file from the game, and modify it. This way we can see what the format should be, and ensure we follow it correctly.
 
 > [!IMPORTANT]
-> Dimensions has multiple versions of the same file, stored across different `.DAT` archives. To ensure our mod works correctly, we will be using the `TEXT.CSV` file from the `PATCH` archive, as this will take the highest priority.
+> Dimensions has multiple versions of the same file, stored across different `.DAT` archives. To ensure our mod works correctly, we will be using the `TEXT.CSV` file from the `PATCH` archive, as these archives have the highest priority.
 
 Using BrickVault, go to `File -> Open` and locate and open the `PATCH.DAT` file in your LEGO Dimensions installation (it should be located in the `data/chunk1` folder). Once opened, navigate to the `STUFF/TEXT/` folder, and extract the `TEXT.CSV` file somewhere temporary on your PC (i.e. your Desktop). Do not save it directly into your mod folder.
 
@@ -96,7 +96,7 @@ Mod name: "Rename Vorton" (This is the internal name of the mod. Whilst it is no
 Author: "connorh315"
 Version: "1.0" (Again, not currently used, but will be in future versions of Anomaly)
 Build HDR File: Checked (Really important that you check this!)
-Archive version: "V11" (this is the version used by LEGO Dimensions)
+Archive version: "V11" (This is the version used by LEGO Dimensions)
 ```
 
 > [!WARNING]
@@ -120,4 +120,4 @@ That's it! You have successfully created and loaded your first Anomaly mod!
 Play around with copying and modifying other text entries in the `TEXT.CSV` file. Remember to rebuild your mod using BrickVault each time you make changes. You will also need to restart the game to see changes take effect.
 
 > [!TIP]
-> Notice how long it takes to get into the game with the unskippable splash screens? How about creating a mod that decreases the loading times? See the [quick startup mod example] to create a mod that does just that!
+> Notice how long it takes to get into the game with the unskippable splash screens? How about creating a mod that decreases the loading times? See the [quick startup mod example](examples/QUICKSTARTUPMOD.md) to create a mod that does just that!
