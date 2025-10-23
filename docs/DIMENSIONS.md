@@ -51,3 +51,7 @@ The table below summarises the current state of modding for each file type in LE
 > Most file types are included here for completeness, but many will not be relevant to most modders. The remaining WIP file types that are likely to be of interest to modders are: `AN4`, `CU3`, `DNO`, `GHG`, `GSC`.
 
 Despite many file types being marked as "Work in progress", a significant amount of modding is already possible. Mods such as adding in new characters, with custom audio and textures, are already possible. Adding in static models will greatly increase modding potential. 
+
+Additionally, it's important that each mod introduces content in a way that minimises conflicts with other mods. For example, creating a character mod that adds in custom text should not override the entire `TEXT.CSV` file, which is why the [Layered Files](LAYEREDFILES.md) system was introduced.
+
+The current list of layered files supported by Anomaly can be found in the [Layered Files](LAYEREDFILES.md) document.
